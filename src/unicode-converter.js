@@ -71,7 +71,8 @@ UnicodeConvertStream.prototype._transform = function (chunk, encoding, callback)
                 continue;
             } else {
                 if (this.charBegin == this.charBuffer) {
-                    console.log('could not decode' + this.charBuffer[0]);
+                    console.log('could not decode' + this.charBuffer.slice(0,1));
+                    push(this, this.charBuffer.slice(0,1));
                     this.charBuffer = this.charBuffer.slice(1);
                 }
             }
