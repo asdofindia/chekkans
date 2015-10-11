@@ -22,6 +22,7 @@ function UnicodeConvertStream(options) {
 
 UnicodeConvertStream.prototype._transform = function (chunk, encoding, callback) {
     for (var i = 0; i < chunk.length; i++) {
+        console.log('chunk is' + chunk[i]);
         var unicodeChunk = this.map[chunk[i].toString()];
         this.push(unicodeChunk);
     }
