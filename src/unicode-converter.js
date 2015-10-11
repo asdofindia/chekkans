@@ -10,7 +10,9 @@ function UnicodeConvertStream(options) {
     var rules = options.map.split('\n');
     for (var i = 0; i < rules.length; i++) {
         var rule = rules[i];
-        if rule.startswith("#") continue;
+        if (rule.startsWith("#")) {
+            continue;
+        } 
         [lhs, rhs] = rule.split("=");
         this.map[lhs]=rhs;
     }
