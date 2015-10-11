@@ -12,8 +12,9 @@ function UnicodeConvertStream(options) {
         var rule = rules[i];
         if (rule.startsWith("#")) {
             continue;
-        } 
-        [lhs, rhs] = rule.split("=");
+        }
+        var lhs = rule.split('=')[0];
+        var rhs = rule.split('=')[1];
         this.map[lhs]=rhs;
     }
     Transform.call(this, options);
