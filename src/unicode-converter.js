@@ -14,3 +14,5 @@ UnicodeConvertStream.prototype._transform = function (chunk, encoding, callback)
     this.push(unicodeChunk);
     callback();
 }
+
+module.exports = UnicodeConvertStream;
