@@ -1,7 +1,7 @@
-var unicoderter = require('./src/unicode-converter');
+var unicoderter = require('../src/unicode-converter');
 var fs = require('fs');
 
-var map = fs.readFileSync('ambili.map', 'utf8');
+var map = fs.readFileSync('tests/ambili.map', 'utf8');
 
 var unicoder = new unicoderter({
         map: map,
