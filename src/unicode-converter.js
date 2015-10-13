@@ -46,7 +46,6 @@ UnicodeConvertStream.prototype._transform = function (chunk, encoding, callback)
     }
     chunk = chunk.toString();
     this.charBuffer = this.charBuffer + chunk;
-    console.log(this.charBuffer);
     while (this.charBuffer != '') {
         this.charBegin = this.charBuffer;
         if (this.charBuffer.length > 2) {
@@ -71,7 +70,7 @@ UnicodeConvertStream.prototype._transform = function (chunk, encoding, callback)
                 continue;
             } else {
                 if (this.charBegin == this.charBuffer) {
-                    console.log('could not decode' + this.charBuffer.slice(0,1));
+                    // console.log('could not decode' + this.charBuffer.slice(0,1));
                     push.call(this, this.charBuffer.slice(0,1));
                     this.charBuffer = this.charBuffer.slice(1);
                 }
