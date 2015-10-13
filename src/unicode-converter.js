@@ -44,7 +44,6 @@ UnicodeConvertStream.prototype._transform = function (chunk, encoding, callback)
             }
         }
     }
-    chunk = chunk.toString();
     this.charBuffer = this.charBuffer + chunk;
     while (this.charBuffer != '') {
         this.charBegin = this.charBuffer;
@@ -70,7 +69,6 @@ UnicodeConvertStream.prototype._transform = function (chunk, encoding, callback)
                 continue;
             } else {
                 if (this.charBegin == this.charBuffer) {
-                    // console.log('could not decode' + this.charBuffer.slice(0,1));
                     push.call(this, this.charBuffer.slice(0,1));
                     this.charBuffer = this.charBuffer.slice(1);
                 }
