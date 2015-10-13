@@ -3,9 +3,9 @@ var Transform = require('stream').Transform;
 util.inherits(UnicodeConvertStream, Transform);
 
 if (typeof String.prototype.startsWith != 'function') {
-  // see below for better implementation!
+  // add startsWith() http://stackoverflow.com/a/646643/589184
   String.prototype.startsWith = function (str){
-    return this.indexOf(str) === 0;
+    return this.slice(0, str.length) == str;
   };
 }
 
