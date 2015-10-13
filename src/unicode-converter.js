@@ -29,7 +29,7 @@ function UnicodeConvertStream(options) {
     this.charBuffer = '';
     this.baseBuffer = '';
     this.postBase = options.postBase;
-    Transform.call(this, options);
+    Transform.call(this);
 }
 
 UnicodeConvertStream.prototype._transform = function (chunk, encoding, callback) {
