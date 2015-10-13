@@ -28,6 +28,7 @@ function UnicodeConvertStream(options) {
     this.map[' ']=' ';
     this.charBuffer = '';
     this.baseBuffer = '';
+    this.maxWidthLHS = 3;
     this.postBase = options.postBase;
     Transform.call(this);
 }
@@ -45,34 +46,34 @@ UnicodeConvertStream.prototype._transform = function (chunk, encoding, callback)
         }
     }
     this.charBuffer = this.charBuffer + chunk;
+    processingLoop:
     while (this.charBuffer != '') {
         this.charBegin = this.charBuffer;
-        if (this.charBuffer.length > 2) {
-            // if there's a mapping for a 3 char slice
-            if (this.map[this.charBuffer.slice(0,3)] != undefined) {
-                push.call(this, this.map[this.charBuffer.slice(0,3)]);
-                this.charBuffer = this.charBuffer.slice(3);
-                continue;
-            }
-        }
-        if (this.charBuffer.length > 1) {
-            if (this.map[this.charBuffer.slice(0,2)] != undefined) {
-                push.call(this, this.map[this.charBuffer.slice(0,2)]);
-                this.charBuffer = this.charBuffer.slice(2);
-                continue;
-            }
-        }
-        if (this.charBuffer.length > 0) {
-            if (this.map[this.charBuffer.slice(0,1)] != undefined) {
-                push.call(this, this.map[this.charBuffer.slice(0,1)]);
-                this.charBuffer = this.charBuffer.slice(1);
-                continue;
+
+        // check and push checks if the first @charSize characters of the charBuffer has a map entry. If yes, it slices that part from the charBuffer and pushes the corresponding RHS to output
+        var checkandpush = function(charSize) {
+            if (this.map[this.charBuffer.slice(0, charSize)] != undefined) {
+                push.call(this, this.map[this.charBuffer.slice(0, charSize)]);
+                this.charBuffer = this.charBuffer.slice(charSize);
+                return true;
             } else {
-                if (this.charBegin == this.charBuffer) {
-                    push.call(this, this.charBuffer.slice(0,1));
-                    this.charBuffer = this.charBuffer.slice(1);
+                return false;
+            }
+        }
+
+        // This loop calls checkandpush for ..., 3, 2, 1 chars from charBuffer so that the largest match can be mapped first.
+        // For example, in Ambili, C=ഇ, Cu=ഈ. We would want to see if C is followed by u before converting it to ഇ.
+        for (var currLHSwidth = this.maxWidthLHS; currLHSwidth >= 1; currLHSwidth--) {
+            if (this.charBuffer.length >= currLHSwidth) {
+                if (checkandpush.call(this, currLHSwidth)) {
+                    continue processingLoop;
                 }
             }
+        }
+        // If we've gone through the loop without slicing the charBuffer even once, that means the character is undecodable. So let's just output the same.
+        if (this.charBegin == this.charBuffer) {
+            push.call(this, this.charBuffer.slice(0,1));
+            this.charBuffer = this.charBuffer.slice(1);
         }
     }
     callback();
