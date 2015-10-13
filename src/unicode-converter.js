@@ -33,14 +33,14 @@ function UnicodeConvertStream(options) {
 }
 
 UnicodeConvertStream.prototype._transform = function (chunk, encoding, callback) {
-    var push = function(that, char) {
-        if (that.postBase.indexOf(char) >= 0) {
-            that.baseBuffer = that.baseBuffer + char;
+    var push = function(char) {
+        if (this.postBase.indexOf(char) >= 0) {
+            this.baseBuffer = this.baseBuffer + char;
         } else {
-            that.push(char);
-            if (that.baseBuffer != '') {
-                that.push(that.baseBuffer);
-                that.baseBuffer = '';
+            this.push(char);
+            if (this.baseBuffer != '') {
+                this.push(this.baseBuffer);
+                this.baseBuffer = '';
             }
         }
     }
@@ -52,27 +52,27 @@ UnicodeConvertStream.prototype._transform = function (chunk, encoding, callback)
         if (this.charBuffer.length > 2) {
             // if there's a mapping for a 3 char slice
             if (this.map[this.charBuffer.slice(0,3)] != undefined) {
-                push(this, this.map[this.charBuffer.slice(0,3)]);
+                push.call(this, this.map[this.charBuffer.slice(0,3)]);
                 this.charBuffer = this.charBuffer.slice(3);
                 continue;
             }
         }
         if (this.charBuffer.length > 1) {
             if (this.map[this.charBuffer.slice(0,2)] != undefined) {
-                push(this, this.map[this.charBuffer.slice(0,2)]);
+                push.call(this, this.map[this.charBuffer.slice(0,2)]);
                 this.charBuffer = this.charBuffer.slice(2);
                 continue;
             }
         }
         if (this.charBuffer.length > 0) {
             if (this.map[this.charBuffer.slice(0,1)] != undefined) {
-                push(this, this.map[this.charBuffer.slice(0,1)]);
+                push.call(this, this.map[this.charBuffer.slice(0,1)]);
                 this.charBuffer = this.charBuffer.slice(1);
                 continue;
             } else {
                 if (this.charBegin == this.charBuffer) {
                     console.log('could not decode' + this.charBuffer.slice(0,1));
-                    push(this, this.charBuffer.slice(0,1));
+                    push.call(this, this.charBuffer.slice(0,1));
                     this.charBuffer = this.charBuffer.slice(1);
                 }
             }
