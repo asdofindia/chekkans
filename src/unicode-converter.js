@@ -35,36 +35,13 @@ function UnicodeConvertStream(options) {
 
 UnicodeConvertStream.prototype._transform = function (chunk, encoding, callback) {
     this.charBuffer = this.charBuffer + chunk;
-    processingLoop:
-    while (this.charBuffer != '') {
-        this.charBegin = this.charBuffer;
+    this._process(this.maxWidthLHS);
+    callback();
+}
 
-        // check and push checks if the first @charSize characters of the charBuffer has a map entry. If yes, it slices that part from the charBuffer and pushes the corresponding RHS to output
-        var checkandpush = function(charSize) {
-            if (this.map[this.charBuffer.slice(0, charSize)] != undefined) {
-                this._pushBuffer(this.map[this.charBuffer.slice(0, charSize)]);
-                this.charBuffer = this.charBuffer.slice(charSize);
-                return true;
-            } else {
-                return false;
-            }
-        }
-
-        // This loop calls checkandpush for ..., 3, 2, 1 chars from charBuffer so that the largest match can be mapped first.
-        // For example, in Ambili, C=ഇ, Cu=ഈ. We would want to see if C is followed by u before converting it to ഇ.
-        for (var currLHSwidth = this.maxWidthLHS; currLHSwidth >= 1; currLHSwidth--) {
-            if (this.charBuffer.length >= currLHSwidth) {
-                if (checkandpush.call(this, currLHSwidth)) {
-                    continue processingLoop;
-                }
-            }
-        }
-        // If we've gone through the loop without slicing the charBuffer even once, that means the character is undecodable. So let's just output the same.
-        if (this.charBegin == this.charBuffer) {
-            this._pushBuffer(this.charBuffer.slice(0,1));
-            this.charBuffer = this.charBuffer.slice(1);
-        }
-    }
+UnicodeConvertStream.prototype._flush = function(callback) {
+    // process even if there's only one char left. No more data to append.
+    this._process(1);
     callback();
 }
 
@@ -76,6 +53,39 @@ UnicodeConvertStream.prototype._pushBuffer = function(char) {
         if (this.baseBuffer != '') {
             this.push(this.baseBuffer);
             this.baseBuffer = '';
+        }
+    }
+}
+
+// check and push checks if the first @charSize characters of the charBuffer has a map entry. If yes, it slices that part from the charBuffer and pushes the corresponding RHS to output
+UnicodeConvertStream.prototype._checkAndPush = function(charSize) {
+    if (this.map[this.charBuffer.slice(0, charSize)] != undefined) {
+        this._pushBuffer(this.map[this.charBuffer.slice(0, charSize)]);
+        this.charBuffer = this.charBuffer.slice(charSize);
+        return true;
+    } else {
+        return false;
+    }
+}
+
+UnicodeConvertStream.prototype._process = function(widthToCare) {
+    processingLoop:
+    while (this.charBuffer.length >= widthToCare) {
+        this.charBegin = this.charBuffer;
+
+        // This loop calls checkandpush for ..., 3, 2, 1 chars from charBuffer so that the largest match can be mapped first.
+        // For example, in Ambili, C=ഇ, Cu=ഈ. We would want to see if C is followed by u before converting it to ഇ.
+        for (var currLHSwidth = this.maxWidthLHS; currLHSwidth >= 1; currLHSwidth--) {
+            if (this.charBuffer.length >= currLHSwidth) {
+                if (this._checkAndPush(currLHSwidth)) {
+                    continue processingLoop;
+                }
+            }
+        }
+        // If we've gone through the loop without slicing the charBuffer even once, that means the character is undecodable. So let's just output the same.
+        if (this.charBegin == this.charBuffer) {
+            this._pushBuffer(this.charBuffer.slice(0,1));
+            this.charBuffer = this.charBuffer.slice(1);
         }
     }
 }
