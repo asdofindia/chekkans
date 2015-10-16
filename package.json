@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/asdofindia/node-unicode-converter.git"
+    "url": "git+https://github.com/asdofindia/unicode-converter.git"
   },
   "keywords": [
     "font",
@@ -20,7 +20,7 @@
   "author": "Akshay S Dinesh <asdofindia@gmail.com> (http://learnlearn.in)",
   "license": "GPLv3",
   "bugs": {
-    "url": "https://github.com/asdofindia/node-unicode-converter/issues"
+    "url": "https://github.com/asdofindia/unicode-converter/issues"
   },
-  "homepage": "https://github.com/asdofindia/node-unicode-converter#readme"
+  "homepage": "https://github.com/asdofindia/unicode-converter#readme"
 }
