@@ -34,17 +34,6 @@ function UnicodeConvertStream(options) {
 }
 
 UnicodeConvertStream.prototype._transform = function (chunk, encoding, callback) {
-    var push = function(char) {
-        if (this.postBase.indexOf(char) >= 0) {
-            this.baseBuffer = this.baseBuffer + char;
-        } else {
-            this.push(char);
-            if (this.baseBuffer != '') {
-                this.push(this.baseBuffer);
-                this.baseBuffer = '';
-            }
-        }
-    }
     this.charBuffer = this.charBuffer + chunk;
     processingLoop:
     while (this.charBuffer != '') {
@@ -53,7 +42,7 @@ UnicodeConvertStream.prototype._transform = function (chunk, encoding, callback)
         // check and push checks if the first @charSize characters of the charBuffer has a map entry. If yes, it slices that part from the charBuffer and pushes the corresponding RHS to output
         var checkandpush = function(charSize) {
             if (this.map[this.charBuffer.slice(0, charSize)] != undefined) {
-                push.call(this, this.map[this.charBuffer.slice(0, charSize)]);
+                this._pushBuffer(this.map[this.charBuffer.slice(0, charSize)]);
                 this.charBuffer = this.charBuffer.slice(charSize);
                 return true;
             } else {
@@ -72,11 +61,23 @@ UnicodeConvertStream.prototype._transform = function (chunk, encoding, callback)
         }
         // If we've gone through the loop without slicing the charBuffer even once, that means the character is undecodable. So let's just output the same.
         if (this.charBegin == this.charBuffer) {
-            push.call(this, this.charBuffer.slice(0,1));
+            this._pushBuffer(this.charBuffer.slice(0,1));
             this.charBuffer = this.charBuffer.slice(1);
         }
     }
     callback();
+}
+
+UnicodeConvertStream.prototype._pushBuffer = function(char) {
+    if (this.postBase.indexOf(char) >= 0) {
+        this.baseBuffer = this.baseBuffer + char;
+    } else {
+        this.push(char);
+        if (this.baseBuffer != '') {
+            this.push(this.baseBuffer);
+            this.baseBuffer = '';
+        }
+    }
 }
 
 module.exports = UnicodeConvertStream;
